@@ -54,3 +54,7 @@
   :pin "9b7bc521e54af2c7a5c882e4758b66ee4af1a152")
 (package! screenshot :recipe (:local-repo "lisp/screenshot"))
 (package! info-colors :pin "2e237c301ba62f0e0286a27c1abe48c4c8441143")
+(package! drag-stuff)
+(package! dap-mode)
+(package! virtualenvwrapper)
+(package! python-black)

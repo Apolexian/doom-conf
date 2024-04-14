@@ -1,9 +1,24 @@
 (setq doom-theme 'doom-dracula)
 (setq doom-font (font-spec :family "Hack Nerd Font" :size 22 :weight 'medium))
 
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type 'relative)
 
 (setq org-directory "~/org/")
+(advice-add #'org-mode-hook :after '+word-wrap-mode)
+(defun org-insert-heading-with-timestamp (&rest r)
+  (insert (format-time-string "~%H:%M:%S~ ")))
+(defun org-insert-heading-with-timestamp-enable ()
+  (interactive)
+  (advice-add 'org-insert-item :after #'org-insert-heading-with-timestamp))
+(defun org-insert-heading-with-timestamp-disable ()
+  (interactive)
+  (advice-remove 'org-insert-item 'org-insert-heading-with-timestamp))
+(use-package! org-tempo
+  :after org)
+(after! org
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("elisp" . "src elisp")))
 
 (setenv "PATH" (concat "/usr/local/go/bin:" (getenv "PATH")))
 (setenv "PATH" (concat "/home/ivan/go/bin:" (getenv "PATH")))
@@ -61,10 +76,54 @@
 
 (map! "S-C-c" #'clipboard-kill-ring-save)
 (map! "S-C-v" #'clipboard-yank)
+;; don't put deleted strings to X11 clipboard
+(setq select-enable-clipboard nil)
+
+(map! :nvi "C-<tab>" 'centaur-tabs-forward)
+(map! :nvi "C-<iso-lefttab>" 'centaur-tabs-backward)
 
 (require 'undo-tree)
 
 (global-set-key (kbd "C-h D") 'devdocs-lookup)
+
+;; Debugging
+(drag-stuff-mode t)
+(global-set-key (kbd "<C-S-up>") 'drag-stuff-up)
+(global-set-key (kbd "<C-S-down>") 'drag-stuff-down)
+
+(map! :map dap-mode-map
+      :leader
+      :prefix ("d" . "dap")
+      ;; basics
+      :desc "dap next"          "n" #'dap-next
+      :desc "dap step in"       "i" #'dap-step-in
+      :desc "dap step out"      "o" #'dap-step-out
+      :desc "dap continue"      "c" #'dap-continue
+      :desc "dap hydra"         "h" #'dap-hydra
+      :desc "dap debug restart" "r" #'dap-debug-restart
+      :desc "dap debug"         "s" #'dap-debug
+
+      ;; debug
+      :prefix ("dd" . "Debug")
+      :desc "dap debug recent"  "r" #'dap-debug-recent
+      :desc "dap debug last"    "l" #'dap-debug-last
+
+      ;; eval
+      :prefix ("de" . "Eval")
+      :desc "eval"                "e" #'dap-eval
+      :desc "eval region"         "r" #'dap-eval-region
+      :desc "eval thing at point" "s" #'dap-eval-thing-at-point
+      :desc "add expression"      "a" #'dap-ui-expressions-add
+      :desc "remove expression"   "d" #'dap-ui-expressions-remove
+
+      :prefix ("db" . "Breakpoint")
+      :desc "dap breakpoint toggle"      "b" #'dap-breakpoint-toggle
+      :desc "dap breakpoint condition"   "c" #'dap-breakpoint-condition
+      :desc "dap breakpoint hit count"   "h" #'dap-breakpoint-hit-condition
+      :desc "dap breakpoint log message" "l" #'dap-breakpoint-log-message)
+
+;; Enabling only some features
+(setq dap-auto-configure-features '(sessions locals controls tooltip))
 
 (use-package! info-colors
   :commands (info-colors-fontify-node))
@@ -83,7 +142,7 @@
         centaur-tabs-gray-out-icons 'buffer)
   (centaur-tabs-change-fonts "P22 Underground Book" 160))
 
-(after! treemacs
+(after! treemacS
   (defvar treemacs-file-ignore-extensions '()
     "File extension which `treemacs-ignore-filter' will ensure are ignored")
   (defvar treemacs-file-ignore-globs '()
@@ -131,3 +190,24 @@
         "*/.auctex-auto"
         "*/_region_.log"
         "*/_region_.tex"))
+(use-package treemacs-projectile
+  :after (treemacs projectile))
+
+(after! (treemacs projectile)
+  (treemacs-project-follow-mode 1))
+(defun my/open-treemacs-in-project ()
+  "Automatically open Treemacs in a project."
+  (when (doom-project-root) ; Checks if the current buffer is in a Doom-recognized project
+    (treemacs))) ; Opens Treemacs
+
+(add-hook 'doom-first-file-hook 'my/open-treemacs-in-project)
+
+(setq evil-shift-width 2)
+
+(use-package! virtualenvwrapper)
+(after! virtualenvwrapper
+  (setq venv-location "~/.virtualenvs/")
+)
+(use-package! python-black
+  :after python
+  :hook (python-mode . python-black-on-save-mode-enable-dwim))
