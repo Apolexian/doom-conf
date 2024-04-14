@@ -1,26 +1,67 @@
+#+title: Emacs config
+#+author: Ivan Nikitin
+#+PROPERTY: header-args :tangle config.el
+
+* Font and Themes
+
+#+BEGIN_SRC elisp
 (setq doom-theme 'doom-dracula)
 (setq doom-font (font-spec :family "Hack Nerd Font" :size 22 :weight 'medium))
+#+END_SRC
 
+* Line numbers
+
+#+BEGIN_SRC elisp
 (setq display-line-numbers-type t)
+#+END_SRC
 
+* Org directory
+
+#+BEGIN_SRC elisp
 (setq org-directory "~/org/")
+#+END_SRC
 
+* Path handling
+
+Export some default Golang paths
+
+#+BEGIN_SRC elisp
 (setenv "PATH" (concat "/usr/local/go/bin:" (getenv "PATH")))
 (setenv "PATH" (concat "/home/ivan/go/bin:" (getenv "PATH")))
+#+END_SRC
 
+Make sure Emacs has the same paths as user shell.
+
+#+BEGIN_SRC elisp
 (require 'exec-path-from-shell)
 (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE" "NIX_SSL_CERT_FILE" "NIX_PATH"))
   (add-to-list 'exec-path-from-shell-variables var))
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
+#+END_SRC
 
+* Start screen
+Make starting screen bigger.
+#+BEGIN_SRC elisp
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (setq initial-frame-alist '((top . 1) (left . 1) (width . 170) (height . 45)))
+#+END_SRC
 
+Change starting splash pic.
+#+BEGIN_SRC elisp
 (setq fancy-splash-image (concat doom-user-dir "splash.png"))
+#+END_SRC
 
+* LSP
+
+I use lsp-mode.
+
+#+BEGIN_SRC elisp
 (require 'lsp-mode)
+#+END_SRC
 
+Golang
+#+BEGIN_SRC elisp
 (add-hook 'go-mode-hook #'lsp-deferred)
 
 ;; Set up before-save hooks to format buffer and add/delete imports.
@@ -39,7 +80,10 @@
                            (useany . t)
                            (unusedvariable . t)))
   )
+#+END_SRC
 
+The lsp UI.
+#+BEGIN_SRC elisp
 (use-package lsp-ui
   :commands lsp-ui-mode
   :config
@@ -49,7 +93,12 @@
   (setq lsp-ui-doc-border (face-foreground 'default))
   (setq lsp-ui-sideline-show-code-actions t)
   (setq lsp-ui-sideline-delay 0.05))
+#+END_SRC
 
+* Auto-completion
+
+Copilot settings.
+#+BEGIN_SRC elisp
 ;; accept completion from copilot and fallback to company
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
@@ -58,10 +107,25 @@
               ("TAB" . 'copilot-accept-completion)
               ("C-TAB" . 'copilot-accept-completion-by-word)
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
+#+END_SRC
 
+* Key-maps
+
+** Clipboard
+
+#+BEGIN_SRC elisp
 (map! "S-C-c" #'clipboard-kill-ring-save)
 (map! "S-C-v" #'clipboard-yank)
+#+END_SRC
 
+* Undo tree
+
+#+BEGIN_SRC elisp
 (require 'undo-tree)
+#+END_SRC
 
+* Devdocs
+
+#+BEGIN_SRC elisp
 (global-set-key (kbd "C-h D") 'devdocs-lookup)
+#+END_SRC
