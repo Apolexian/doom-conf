@@ -50,3 +50,7 @@
 ;; (unpin! t)
 (package! copilot
   :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
+(package! vlf :recipe (:host github :repo "emacs-straight/vlf" :files ("*.el"))
+  :pin "9b7bc521e54af2c7a5c882e4758b66ee4af1a152")
+(package! screenshot :recipe (:local-repo "lisp/screenshot"))
+(package! info-colors :pin "2e237c301ba62f0e0286a27c1abe48c4c8441143")
